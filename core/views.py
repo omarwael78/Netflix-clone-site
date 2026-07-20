@@ -5,24 +5,8 @@ from .models import Movie, MovieList
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
+from django.core.paginator import Paginator
 import re
-
-GENRE_SLUG_MAP = {
-    'action': 'Action',
-    'comedy': 'Comedy',
-    'drama': 'Drama',
-    'horror': 'Horror',
-    'romance': 'Romance',
-    'science_fiction': 'Science Fiction',
-    'fantasy': 'Fantasy',
-    'thriller': 'Thriller',
-    'animation': 'Animation',
-    'documentary': 'Documentary',
-    'mystery': 'Mystery',
-    'crime': 'Crime',
-    'adventure': 'Adventure',
-    'western': 'Western',
-}
 
 
 @login_required(login_url='login')
@@ -33,7 +17,7 @@ def index(request):
         featured_movie = movies.first()
 
     genre_sections = []
-    for slug, label in GENRE_SLUG_MAP.items():
+    for slug, label in Movie.GENRE_CHOICES:
         genre_movies = movies.filter(genre=slug)
         if genre_movies.exists():
             genre_sections.append({
@@ -52,10 +36,10 @@ def index(request):
     }
     return render(request, 'index.html', context)
 
+
 @login_required(login_url='login')
 def movie(request, pk):
-    movie_uuid = pk
-    movie_details = Movie.objects.get(uu_id=movie_uuid)
+    movie_details = Movie.objects.get(uu_id=pk)
     movie_details.movie_views += 1
     movie_details.save()
 
@@ -65,30 +49,45 @@ def movie(request, pk):
 
     return render(request, 'movie.html', context)
 
+
 @login_required(login_url='login')
 def genre(request, pk):
     movie_genre = pk
-    movies = Movie.objects.filter(genre=movie_genre)
+    movies_list = Movie.objects.filter(genre=movie_genre)
+
+    paginator = Paginator(movies_list.order_by('title'), 12)
+    page_number = request.GET.get('page')
+    movies = paginator.get_page(page_number)
 
     context = {
         'movies': movies,
         'movie_genre': movie_genre,
+        'is_paginated': movies.has_other_pages(),
+        'page_obj': movies,
     }
     return render(request, 'genre.html', context)
 
+
 @login_required(login_url='login')
 def search(request):
-    if request.method == 'POST':
-        search_term = request.POST['search_term']
-        movies = Movie.objects.filter(title__icontains=search_term)
+    search_term = request.GET.get('q', '').strip()
+    if not search_term:
+        return render(request, 'search.html', {'movies': [], 'search_term': ''})
 
-        context = {
-            'movies': movies,
-            'search_term': search_term,
-        }
-        return render(request, 'search.html', context)
-    else:
-        return redirect('/')
+    movies_list = Movie.objects.filter(title__icontains=search_term)
+
+    paginator = Paginator(movies_list.order_by('title'), 12)
+    page_number = request.GET.get('page')
+    movies = paginator.get_page(page_number)
+
+    context = {
+        'movies': movies,
+        'search_term': search_term,
+        'is_paginated': movies.has_other_pages(),
+        'page_obj': movies,
+    }
+    return render(request, 'search.html', context)
+
 
 @login_required(login_url='login')
 def my_list(request):
@@ -99,6 +98,7 @@ def my_list(request):
         'movies': user_movie_list
     }
     return render(request, 'my_list.html', context)
+
 
 @login_required(login_url='login')
 def add_to_list(request):
@@ -118,7 +118,6 @@ def add_to_list(request):
 
         return JsonResponse(response_data)
     else:
-        # return error
         return JsonResponse({'status': 'error', 'message': 'Invalid request'}, status=400)
 
 
@@ -135,8 +134,9 @@ def login(request):
         else:
             messages.info(request, 'Credentials Invalid')
             return redirect('login')
-    
+
     return render(request, 'login.html')
+
 
 def signup(request):
     if request.method == 'POST':
@@ -156,7 +156,6 @@ def signup(request):
                 user = User.objects.create_user(username=username, email=email, password=password)
                 user.save()
 
-                # log user in
                 user_login = auth.authenticate(username=username, password=password)
                 auth.login(request, user_login)
                 return redirect('/')
@@ -165,6 +164,7 @@ def signup(request):
             return redirect('signup')
     else:
         return render(request, 'signup.html')
+
 
 @login_required(login_url='login')
 def logout(request):

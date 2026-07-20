@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Page Not Found - Netflix Clone{% endblock %}
+
+{% block content %}
+<div class="browse-page" style="text-align: center; padding: 100px 20px;">
+    <h1 style="font-size: 80px; color: #e50914;">404</h1>
+    <h2 style="margin: 20px 0;">Lost your way?</h2>
+    <p style="color: #b3b3b3; max-width: 500px; margin: 0 auto 30px;">
+        Sorry, we can't find that page. You'll find lots to explore on the home page.
+    </p>
+    <a href="/" class="btn-play" style="display: inline-block; text-decoration: none;">
+        Netflix Home
+    </a>
+</div>
+{% endblock %}

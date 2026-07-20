@@ -1,41 +1,44 @@
+{% extends 'base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" type="text/css" href="{% static 'assets/login.css' %}" />
-    <title>Netflix Clone - Login</title>
-</head>
-<body>
-    <div class="bg-image">
-        <div class="auth-header">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" alt="Netflix">
-        </div>
-        <div class="signup-container">
-            <h1>Sign In</h1>
-            {% for message in messages %}
-            <div class="error-msg">{{ message }}</div>
-            {% endfor %}
-            <form action="{% url 'login' %}" method="POST">
-                {% csrf_token %}
-                <input type="text" name="username" placeholder="Email or phone number" required />
-                <input type="password" name="password" placeholder="Password" required />
-                <button type="submit" class="signup-btn">Sign In</button>
-            </form>
-            <div class="help-text" align="center">
-                <span>New to Netflix? <a href="{% url 'signup' %}">Sign up now</a></span>
-            </div>
-        </div>
-        <div class="auth-footer">
-            <a href="#">FAQ</a>
-            <a href="#">Help Centre</a>
-            <a href="#">Terms of Use</a>
-            <a href="#">Privacy</a>
-            <a href="#">Cookie Preferences</a>
-            <a href="#">Corporate Information</a>
+
+{% block title %}Netflix Clone - Sign In{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'assets/login.css' %}" />
+{% endblock %}
+
+{% block navbar %}{% endblock %}
+
+{% block content %}
+<div class="bg-image">
+    <div class="auth-header">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" alt="Netflix">
+    </div>
+    <div class="signup-container">
+        <h1>Sign In</h1>
+        {% for message in messages %}
+        <div class="error-msg">{{ message }}</div>
+        {% endfor %}
+        <form action="{% url 'login' %}" method="POST">
+            {% csrf_token %}
+            <input type="text" name="username" placeholder="Email or phone number" required />
+            <input type="password" name="password" placeholder="Password" required />
+            <button type="submit" class="signup-btn">Sign In</button>
+        </form>
+        <div class="help-text" align="center">
+            <span>New to Netflix? <a href="{% url 'signup' %}">Sign up now</a></span>
         </div>
     </div>
-</body>
-</html>
+    <div class="auth-footer">
+        <a href="#">FAQ</a>
+        <a href="#">Help Centre</a>
+        <a href="#">Terms of Use</a>
+        <a href="#">Privacy</a>
+        <a href="#">Cookie Preferences</a>
+        <a href="#">Corporate Information</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}{% endblock %}
+{% block extra_scripts %}{% endblock %}

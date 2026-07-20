@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Server Error - Netflix Clone{% endblock %}
+
+{% block content %}
+<div class="browse-page" style="text-align: center; padding: 100px 20px;">
+    <h1 style="font-size: 80px; color: #e50914;">500</h1>
+    <h2 style="margin: 20px 0;">Something went wrong</h2>
+    <p style="color: #b3b3b3; max-width: 500px; margin: 0 auto 30px;">
+        Our servers are having a hiccup. Please try again later.
+    </p>
+    <a href="/" class="btn-play" style="display: inline-block; text-decoration: none;">
+        Netflix Home
+    </a>
+</div>
+{% endblock %}

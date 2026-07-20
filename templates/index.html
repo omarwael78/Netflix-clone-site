@@ -1,0 +1,328 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Netflix Clone</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/style.css' %}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar" id="navbar">
+        <div class="navbar-left">
+            <a href="/">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" alt="Netflix" class="navbar-logo">
+            </a>
+            <ul class="navbar-links">
+                <li><a href="/" class="active">Home</a></li>
+                <li>
+                    <div class="dropdown">
+                        <span class="dropdown-btn" onclick="toggleDropdown()">Genres <i class="fas fa-caret-down"></i></span>
+                        <div class="dropdown-content" id="genreDropdown">
+                            <a href="{% url 'genre' 'action' %}">Action</a>
+                            <a href="{% url 'genre' 'adventure' %}">Adventure</a>
+                            <a href="{% url 'genre' 'animation' %}">Animation</a>
+                            <a href="{% url 'genre' 'comedy' %}">Comedy</a>
+                            <a href="{% url 'genre' 'crime' %}">Crime</a>
+                            <a href="{% url 'genre' 'documentary' %}">Documentary</a>
+                            <a href="{% url 'genre' 'drama' %}">Drama</a>
+                            <a href="{% url 'genre' 'fantasy' %}">Fantasy</a>
+                            <a href="{% url 'genre' 'horror' %}">Horror</a>
+                            <a href="{% url 'genre' 'mystery' %}">Mystery</a>
+                            <a href="{% url 'genre' 'romance' %}">Romance</a>
+                            <a href="{% url 'genre' 'science_fiction' %}">Sci-Fi</a>
+                            <a href="{% url 'genre' 'thriller' %}">Thriller</a>
+                            <a href="{% url 'genre' 'western' %}">Western</a>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="{% url 'my-list' %}">My List</a></li>
+            </ul>
+        </div>
+        <div class="navbar-right">
+            <form class="search-form" action="{% url 'search' %}" method="POST">
+                {% csrf_token %}
+                <input type="search" name="search_term" placeholder="Search" aria-label="Search">
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </form>
+            <div class="navbar-user">
+                <span><i class="fas fa-bell" style="font-size: 18px; cursor: pointer;"></i></span>
+                <span><i class="fas fa-user-circle" style="font-size: 24px; cursor: pointer;"></i></span>
+                <a href="/logout">Sign Out</a>
+            </div>
+        </div>
+    </nav>
+
+    {% if featured_movie %}
+    <!-- Hero Banner -->
+    <section class="hero-banner" style="background-image: url('{{ featured_movie.image_cover.url }}');">
+        <div class="hero-content">
+            <h1 class="hero-title">{{ featured_movie.title }}</h1>
+            <div class="hero-meta">
+                <span class="match">98% Match</span>
+                <span class="year">{{ featured_movie.release_date|date:'Y' }}</span>
+                <span class="age-rating">{{ featured_movie.age_rating }}</span>
+                <span class="seasons">{{ featured_movie.length }} min</span>
+            </div>
+            <p class="hero-description">{{ featured_movie.description|truncatewords:40 }}</p>
+            <div class="hero-buttons">
+                <a href="{% url 'movie' featured_movie.uu_id %}" class="btn-play">
+                    <i class="fas fa-play"></i> Play
+                </a>
+                <a href="#" class="btn-more-info" onclick="showModalFromHero('{{ featured_movie.uu_id }}'); return false;">
+                    <i class="fas fa-info-circle"></i> More Info
+                </a>
+            </div>
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Content Rows -->
+    <section class="content-rows">
+        {% if recently_added %}
+        <div class="row-section">
+            <div class="row-header">
+                <h2 class="row-title">Popular on Netflix</h2>
+            </div>
+            <div class="row-scroll-container">
+                <button class="row-arrow row-arrow-left" onclick="scrollRow(this, -400)"><i class="fas fa-chevron-left"></i></button>
+                <div class="row-movies" id="row-popular">
+                    {% for movie in recently_added %}
+                    <div class="movie-card" onclick="showModal(this)"
+                        data-uuid="{{ movie.uu_id }}"
+                        data-title="{{ movie.title }}"
+                        data-description="{{ movie.description }}"
+                        data-release-date="{{ movie.release_date|date:'Y' }}"
+                        data-genre="{{ movie.get_genre_display }}"
+                        data-length="{{ movie.length }}"
+                        data-age-rating="{{ movie.age_rating }}"
+                        data-image-card="{{ movie.image_card.url }}"
+                        data-image-cover="{{ movie.image_cover.url }}">
+                        <div class="movie-card-image" style="background-image: url('{{ movie.image_card.url }}');"></div>
+                        <div class="movie-card-overlay">
+                            <h3>{{ movie.title }}</h3>
+                            <div class="card-meta">{{ movie.release_date|date:'Y' }} &bull; {{ movie.length }} min</div>
+                            <div class="card-buttons">
+                                <a href="{% url 'movie' movie.uu_id %}" class="card-btn play-btn"><i class="fas fa-play"></i></a>
+                                <button class="card-btn" onclick="event.stopPropagation(); addItemToList('{{ movie.uu_id }}', this)"><i class="fas fa-plus"></i></button>
+                                <button class="card-btn" onclick="event.stopPropagation(); showModal(this.parentElement.parentElement.parentElement)"><i class="fas fa-chevron-down"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="row-arrow row-arrow-right" onclick="scrollRow(this, 400)"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+        {% endif %}
+
+        {% for section in genre_sections %}
+        <div class="row-section">
+            <div class="row-header">
+                <h2 class="row-title">{{ section.label }}</h2>
+                <a href="{% url 'genre' section.slug %}" style="color: #b3b3b3; font-size: 13px; text-decoration: none; font-weight: 600;">Explore All</a>
+            </div>
+            <div class="row-scroll-container">
+                <button class="row-arrow row-arrow-left" onclick="scrollRow(this, -400)"><i class="fas fa-chevron-left"></i></button>
+                <div class="row-movies">
+                    {% for movie in section.movies %}
+                    <div class="movie-card" onclick="showModal(this)"
+                        data-uuid="{{ movie.uu_id }}"
+                        data-title="{{ movie.title }}"
+                        data-description="{{ movie.description }}"
+                        data-release-date="{{ movie.release_date|date:'Y' }}"
+                        data-genre="{{ movie.get_genre_display }}"
+                        data-length="{{ movie.length }}"
+                        data-age-rating="{{ movie.age_rating }}"
+                        data-image-card="{{ movie.image_card.url }}"
+                        data-image-cover="{{ movie.image_cover.url }}">
+                        <div class="movie-card-image" style="background-image: url('{{ movie.image_card.url }}');"></div>
+                        <div class="movie-card-overlay">
+                            <h3>{{ movie.title }}</h3>
+                            <div class="card-meta">{{ movie.release_date|date:'Y' }} &bull; {{ movie.length }} min</div>
+                            <div class="card-buttons">
+                                <a href="{% url 'movie' movie.uu_id %}" class="card-btn play-btn"><i class="fas fa-play"></i></a>
+                                <button class="card-btn" onclick="event.stopPropagation(); addItemToList('{{ movie.uu_id }}', this)"><i class="fas fa-plus"></i></button>
+                                <button class="card-btn" onclick="event.stopPropagation(); showModal(this.parentElement.parentElement.parentElement)"><i class="fas fa-chevron-down"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <button class="row-arrow row-arrow-right" onclick="scrollRow(this, 400)"><i class="fas fa-chevron-right"></i></button>
+            </div>
+        </div>
+        {% endfor %}
+    </section>
+
+    <!-- Movie Modal -->
+    <div class="modal" id="movieModal">
+        <div class="modal-content">
+            <div class="modal-header" id="modalHeader">
+                <div class="modal-header-overlay"></div>
+                <button class="modal-close" onclick="hideModal()"><i class="fas fa-times"></i></button>
+                <div class="modal-header-info">
+                    <h2 id="modalTitle">Movie Title</h2>
+                    <div class="modal-actions">
+                        <a href="#" id="modalPlayBtn" class="btn-play"><i class="fas fa-play"></i> Play</a>
+                        <button class="btn-list" id="addToListButton" onclick="addItemToListFromModal()"><i class="fas fa-plus"></i> My List</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div class="modal-meta">
+                    <span class="match" id="modalMatch">98% Match</span>
+                    <span class="year" id="modalYear">2024</span>
+                    <span class="age-rating" id="modalAgeRating">TV-MA</span>
+                    <span class="length" id="modalLength">60 min</span>
+                    <span class="length" id="modalGenre">Genre</span>
+                </div>
+                <p class="modal-description" id="modalDescription">Description</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-social">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+        </div>
+        <div class="footer-links">
+            <a href="#">Audio Description</a>
+            <a href="#">Help Centre</a>
+            <a href="#">Gift Cards</a>
+            <a href="#">Media Centre</a>
+            <a href="#">Investor Relations</a>
+            <a href="#">Jobs</a>
+            <a href="#">Terms of Use</a>
+            <a href="#">Privacy</a>
+            <a href="#">Legal Notices</a>
+            <a href="#">Cookie Preferences</a>
+            <a href="#">Corporate Information</a>
+            <a href="#">Contact Us</a>
+        </div>
+        <div class="footer-bottom">
+            <span class="service-code">Service Code</span>
+            <div class="copyright">&copy; 2026 Netflix Clone. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <script>
+        // === NAVBAR SCROLL EFFECT ===
+        window.addEventListener('scroll', function() {
+            const navbar = document.getElementById('navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // === DROPDOWN ===
+        function toggleDropdown() {
+            const menu = document.getElementById('genreDropdown');
+            menu.classList.toggle('show');
+        }
+
+        window.addEventListener('click', function(event) {
+            if (!event.target.closest('.dropdown')) {
+                const dropdowns = document.getElementsByClassName('dropdown-content');
+                for (let i = 0; i < dropdowns.length; i++) {
+                    dropdowns[i].classList.remove('show');
+                }
+            }
+            if (event.target === document.getElementById('movieModal')) {
+                hideModal();
+            }
+        });
+
+        // === SCROLL ROW ===
+        function scrollRow(btn, amount) {
+            const container = btn.parentElement.querySelector('.row-movies');
+            container.scrollBy({ left: amount, behavior: 'smooth' });
+        }
+
+        // === SHOW MODAL ===
+        function showModal(element) {
+            const modal = document.getElementById('movieModal');
+            const title = element.getAttribute('data-title') || 'Movie';
+            const description = element.getAttribute('data-description') || '';
+            const year = element.getAttribute('data-release-date') || '';
+            const genre = element.getAttribute('data-genre') || '';
+            const length = element.getAttribute('data-length') || '';
+            const ageRating = element.getAttribute('data-age-rating') || 'PG-13';
+            const imageCover = element.getAttribute('data-image-cover') || '';
+            const uuid = element.getAttribute('data-uuid') || '';
+
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalHeader').style.backgroundImage = "url('" + imageCover + "')";
+            document.getElementById('modalYear').textContent = year;
+            document.getElementById('modalAgeRating').textContent = ageRating;
+            document.getElementById('modalLength').textContent = length + ' min';
+            document.getElementById('modalGenre').textContent = genre;
+            document.getElementById('modalDescription').textContent = description;
+            document.getElementById('modalPlayBtn').href = '/movie/' + uuid;
+
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function showModalFromHero(uuid) {
+            const cards = document.querySelectorAll('.movie-card');
+            for (let card of cards) {
+                if (card.getAttribute('data-uuid') === uuid) {
+                    showModal(card);
+                    return;
+                }
+            }
+        }
+
+        function hideModal() {
+            const modal = document.getElementById('movieModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        // === ADD TO LIST ===
+        function addItemToList(movieUUID, btn) {
+            $.ajax({
+                url: "{% url 'add-to-list' %}",
+                type: "POST",
+                data: {
+                    movie_id: movieUUID,
+                    csrfmiddlewaretoken: "{{ csrf_token }}"
+                },
+                success: function(data) {
+                    if (btn) {
+                        btn.innerHTML = '<i class="fas fa-check"></i>';
+                        btn.style.borderColor = '#46d369';
+                        btn.style.color = '#46d369';
+                    }
+                },
+                error: function(xhr, errmsg, err) {
+                    console.error("Error adding item: " + errmsg);
+                }
+            });
+        }
+
+        function addItemToListFromModal() {
+            const playBtn = document.getElementById('modalPlayBtn');
+            const href = playBtn.getAttribute('href');
+            const uuid = href.split('/movie/')[1]?.replace('/', '');
+            if (uuid) {
+                addItemToList(uuid, null);
+                const btn = document.getElementById('addToListButton');
+                btn.innerHTML = '<i class="fas fa-check"></i> Added';
+                btn.style.borderColor = '#46d369';
+                btn.style.color = '#46d369';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,141 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ movie_details.title }} - Netflix Clone</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'assets/style.css' %}" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar scrolled">
+        <div class="navbar-left">
+            <a href="/">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/7/7a/Logonetflix.png" alt="Netflix" class="navbar-logo">
+            </a>
+            <ul class="navbar-links">
+                <li><a href="/">Home</a></li>
+                <li>
+                    <div class="dropdown">
+                        <span class="dropdown-btn" onclick="toggleDropdown()">Genres <i class="fas fa-caret-down"></i></span>
+                        <div class="dropdown-content" id="genreDropdown">
+                            <a href="{% url 'genre' 'action' %}">Action</a>
+                            <a href="{% url 'genre' 'adventure' %}">Adventure</a>
+                            <a href="{% url 'genre' 'animation' %}">Animation</a>
+                            <a href="{% url 'genre' 'comedy' %}">Comedy</a>
+                            <a href="{% url 'genre' 'crime' %}">Crime</a>
+                            <a href="{% url 'genre' 'documentary' %}">Documentary</a>
+                            <a href="{% url 'genre' 'drama' %}">Drama</a>
+                            <a href="{% url 'genre' 'fantasy' %}">Fantasy</a>
+                            <a href="{% url 'genre' 'horror' %}">Horror</a>
+                            <a href="{% url 'genre' 'mystery' %}">Mystery</a>
+                            <a href="{% url 'genre' 'romance' %}">Romance</a>
+                            <a href="{% url 'genre' 'science_fiction' %}">Sci-Fi</a>
+                            <a href="{% url 'genre' 'thriller' %}">Thriller</a>
+                            <a href="{% url 'genre' 'western' %}">Western</a>
+                        </div>
+                    </div>
+                </li>
+                <li><a href="{% url 'my-list' %}">My List</a></li>
+            </ul>
+        </div>
+        <div class="navbar-right">
+            <form class="search-form" action="{% url 'search' %}" method="POST">
+                {% csrf_token %}
+                <input type="search" name="search_term" placeholder="Search" aria-label="Search">
+                <button type="submit"><i class="fas fa-search"></i></button>
+            </form>
+            <div class="navbar-user">
+                <span><i class="fas fa-bell" style="font-size: 18px; cursor: pointer;"></i></span>
+                <span><i class="fas fa-user-circle" style="font-size: 24px; cursor: pointer;"></i></span>
+                <a href="/logout">Sign Out</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="movie-detail-page">
+        <!-- Hero Background -->
+        <div class="movie-detail-hero" style="background-image: url('{{ movie_details.image_cover.url }}');">
+            <div class="movie-detail-hero-content">
+                <h1>{{ movie_details.title }}</h1>
+                <div class="hero-buttons">
+                    <a href="#video-player" class="btn-play" onclick="document.getElementById('video-player').scrollIntoView({behavior:'smooth'}); return false;">
+                        <i class="fas fa-play"></i> Play
+                    </a>
+                    <a href="/" class="btn-more-info">
+                        <i class="fas fa-arrow-left"></i> Back to Browse
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div class="movie-detail-body">
+            <div class="movie-detail-main">
+                <video id="video-player" controls autoplay>
+                    <source src="{{ movie_details.video.url }}" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+
+                <div class="movie-detail-meta">
+                    <span class="match">98% Match</span>
+                    <span><span class="label">Released:</span> <span class="value">{{ movie_details.release_date|date:'Y' }}</span></span>
+                    <span><span class="label">Genre:</span> <span class="value">{{ movie_details.get_genre_display }}</span></span>
+                    <span><span class="label">Length:</span> <span class="value">{{ movie_details.length }} min</span></span>
+                    <span><span class="label">Age Rating:</span> <span class="value">{{ movie_details.age_rating }}</span></span>
+                    <span><span class="label">Views:</span> <span class="value">{{ movie_details.movie_views }}</span></span>
+                </div>
+
+                <div class="movie-detail-description">
+                    {{ movie_details.description }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-social">
+            <a href="#"><i class="fab fa-facebook-f"></i></a>
+            <a href="#"><i class="fab fa-instagram"></i></a>
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+        </div>
+        <div class="footer-links">
+            <a href="#">Audio Description</a>
+            <a href="#">Help Centre</a>
+            <a href="#">Gift Cards</a>
+            <a href="#">Media Centre</a>
+            <a href="#">Investor Relations</a>
+            <a href="#">Jobs</a>
+            <a href="#">Terms of Use</a>
+            <a href="#">Privacy</a>
+            <a href="#">Legal Notices</a>
+            <a href="#">Cookie Preferences</a>
+            <a href="#">Corporate Information</a>
+            <a href="#">Contact Us</a>
+        </div>
+        <div class="footer-bottom">
+            <span class="service-code">Service Code</span>
+            <div class="copyright">&copy; 2026 Netflix Clone. All rights reserved.</div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleDropdown() {
+            document.getElementById('genreDropdown').classList.toggle('show');
+        }
+
+        window.addEventListener('click', function(event) {
+            if (!event.target.closest('.dropdown')) {
+                const dropdowns = document.getElementsByClassName('dropdown-content');
+                for (let i = 0; i < dropdowns.length; i++) {
+                    dropdowns[i].classList.remove('show');
+                }
+            }
+        });
+    </script>
+</body>
+</html>
